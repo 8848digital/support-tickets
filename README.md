@@ -1,1 +1,7 @@
-# support-tickets
+## Support Tickets
+
+Custom App for support
+
+#### License
+
+MIT
