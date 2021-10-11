@@ -43,12 +43,13 @@
    "fieldname": "digital_support_id",
    "fieldtype": "Data",
    "label": "8848Digital Support id",
+   "no_copy": 1,
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-10-08 15:32:01.070763",
+ "modified": "2021-10-11 13:46:19.302907",
  "modified_by": "Administrator",
  "module": "Support Tickets",
  "name": "Support Ticket",

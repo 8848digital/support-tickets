@@ -9,11 +9,15 @@ app_color = "grey"
 app_email = "nirali@ascratech.com"
 app_license = "MIT"
 
-# # override bcz getting 404 error in thirt party files
-# from frappe.website import render
-# from support_tickets.api import add_preload_headers as my_add_preload_headers
-# render.add_preload_headers = my_add_preload_headers
-
+fixtures = [
+		{"dt": "Custom Field", "filters": [
+				[
+					"name", "in", [
+							"Support Settings-support_token"
+					]
+				]
+		]}
+]
 # Includes in <head>
 # ------------------
 
