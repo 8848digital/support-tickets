@@ -13,9 +13,9 @@ def execute():
 
 	r = requests.request("GET", url, headers=headers)
 	response = r.json()
-	server_support_token =  response['data'][0]['support_token']
+	server_side_support_token =  response['data'][0]['support_token']
 
 	doc = frappe.get_doc("Support Settings")
-	doc.support_token = server_support_token
+	doc.support_token = server_side_support_token
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()
