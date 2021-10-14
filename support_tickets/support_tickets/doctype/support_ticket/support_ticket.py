@@ -5,37 +5,53 @@ import frappe
 from frappe.model.document import Document
 import requests
 import json
+from support_tickets.api import validate_and_get_project
 from frappe.utils import get_url, nowdate
 from frappe.utils.data import get_absolute_url
 
 class SupportTicket(Document):
 	def validate(self):
-		if self.is_new():
-			project = project_verification()
-			server_support_token = frappe.db.get_single_value("Support Settings",'server_support_token')
-			support_ticket_reference = get_url()+get_absolute_url(self.doctype,self.name)
-			url = "http://8848digital-staging.8848digitalerp.com/api/resource/Issue"
-			headers = {'Authorization':server_support_token }
-			data = {'subject':self.subject,'description':self.description,'project':project,'support_ticket_reference':support_ticket_reference}
-			
-			r = requests.request("POST", url, headers=headers, data=json.dumps(data))
-			response = r.json()
-			self.digital_support_id = response['data']['name']
+		project = validate_and_get_project()
 
-def project_verification():
-	project_url = get_url()
-	server_support_token = frappe.db.get_single_value("Support Settings",'server_support_token')
-	if server_support_token:
-		url = 'http://8848digital-staging.8848digitalerp.com/api/resource/Project?fields=["name","support_token","support_start_date","support_end_date"]&filters={"project_url": "' +project_url+ '"}'
-		headers = {'Authorization':server_support_token }
-
-		r = requests.request("GET", url, headers=headers)
-		response = r.json()
+		support_settings = frappe.get_single("Support Settings")
+		server_api_key = support_settings.server_api_key
+		server_api_secret = support_settings.get_password('server_api_secret')
+		headers = {'Authorization':'token ' + server_api_key + ':' +  server_api_secret }
 		
-		client_support_token_on_server =  response['data'][0]['support_token']
-		support_end_date = response['data'][0]['support_end_date']
-		client_support_token = frappe.db.get_single_value('Support Settings','support_token')
+		if self.is_new():
+			self.create_issue(headers,project)
+		
+		if self.partner_support_id and self.updates:
+			url = 'http://8848digital-staging.8848digitalerp.com/api/resource/Issue/'+self.partner_support_id
+		
+			r = requests.request("GET", url, headers=headers)
+			response = r.json()
+			issue_updates = response['data']['issue_updates']
 
-		if client_support_token != client_support_token_on_server or  nowdate() > support_end_date:
-			frappe.throw("Your support is expired. Please update support token to continue...")
-		return response['data'][0]['name']
+			support_ticket_update =[]
+			if not issue_updates:
+				for d in self.updates:
+					if not d.issue_update_id:
+						support_ticket_update.append({'description': d.description,'support_ticket_update_id': d.name})
+			else:
+				support_ticket_reference_list = [d.get('support_ticket_update_id') for d in issue_updates]
+				for d in self.updates:
+					if d.name not in support_ticket_reference_list and not d.issue_update_id:
+						support_ticket_update.append({'description': d.description,'support_ticket_update_id': d.name})
+
+			data = {'issue_updates': issue_updates + support_ticket_update}
+			r = requests.request("PUT", url, headers=headers, data = json.dumps(data))
+			response = r.json()
+
+	def create_issue(self, headers, project):
+		support_ticket_reference = get_url() + get_absolute_url(self.doctype,self.name)
+
+		url = "http://8848digital-staging.8848digitalerp.com/api/resource/Issue"
+		data = {'subject':self.subject,'description':self.description,'project':project,'support_ticket_reference':support_ticket_reference}
+		try:
+			r = requests.request("POST", url, headers=headers, data=json.dumps(data))
+		except Exception as e:
+			frappe.throw(str(e))
+		response = r.json()
+
+		self.partner_support_id = response['data']['name']

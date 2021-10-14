@@ -1,1 +1,2 @@
 support_tickets.patches.set_support_token
+support_tickets.patches.create_user

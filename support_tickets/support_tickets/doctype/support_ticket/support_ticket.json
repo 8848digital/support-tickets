@@ -9,9 +9,11 @@
   "subject",
   "column_break_2",
   "attachments",
-  "digital_support_id",
+  "partner_support_id",
   "section_break_5",
-  "description"
+  "description",
+  "section_break_7",
+  "updates"
  ],
  "fields": [
   {
@@ -40,16 +42,25 @@
    "label": "Description"
   },
   {
-   "fieldname": "digital_support_id",
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "updates",
+   "fieldtype": "Table",
+   "label": "Updates",
+   "options": "Support Ticket Update"
+  },
+  {
+   "fieldname": "partner_support_id",
    "fieldtype": "Data",
-   "label": "8848Digital Support id",
-   "no_copy": 1,
+   "label": "Partner Support id",
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-10-11 13:46:19.302907",
+ "modified": "2021-10-14 12:57:10.007478",
  "modified_by": "Administrator",
  "module": "Support Tickets",
  "name": "Support Ticket",
