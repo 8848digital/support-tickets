@@ -13,8 +13,13 @@ fixtures = [
 		{"dt": "Custom Field", "filters": [
 				[
 					"name", "in", [
+							"Support Settings-support_ticket_details"
 							"Support Settings-support_token",
-							"Support Settings-server_support_token"
+							"Support Settings-update_support_token",
+							"Support Settings-support_detail",
+							"Support Settings-server_api_key",
+							"Support Settings-server_api_secret",
+							"Support Settings-update_api_key_and_secret"
 					]
 				]
 		]}

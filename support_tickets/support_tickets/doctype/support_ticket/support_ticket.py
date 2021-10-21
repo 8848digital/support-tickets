@@ -11,13 +11,18 @@ from frappe.utils.data import get_absolute_url
 
 class SupportTicket(Document):
 	def validate(self):
+		pass
+
+	@frappe.whitelist()
+	def update_issue(self):
 		project = validate_and_get_project()
 
 		support_settings = frappe.get_single("Support Settings")
 		server_api_key = support_settings.server_api_key
 		server_api_secret = support_settings.get_password('server_api_secret')
-		headers = {'Authorization':'token ' + server_api_key + ':' +  server_api_secret }
-		
+		headers = {'Authorization':'token ' + server_api_key + ':' +  server_api_secret,'Content-Type': 'application/json',
+  'Cookie': 'full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=' }
+	
 		if self.is_new():
 			self.create_issue(headers,project)
 		
@@ -27,21 +32,27 @@ class SupportTicket(Document):
 			r = requests.request("GET", url, headers=headers)
 			response = r.json()
 			issue_updates = response['data']['issue_updates']
-
 			support_ticket_update =[]
 			if not issue_updates:
 				for d in self.updates:
 					if not d.issue_update_id:
-						support_ticket_update.append({'description': d.description,'support_ticket_update_id': d.name})
+						support_ticket_update.append({"description": d.description,"support_ticket_update_id": d.name})
 			else:
-				support_ticket_reference_list = [d.get('support_ticket_update_id') for d in issue_updates]
+				support_ticket_reference_list = [d.get("support_ticket_update_id") for d in issue_updates]
 				for d in self.updates:
 					if d.name not in support_ticket_reference_list and not d.issue_update_id:
-						support_ticket_update.append({'description': d.description,'support_ticket_update_id': d.name})
+						support_ticket_update.append({"description": d.description,"support_ticket_update_id": d.name})
 
-			data = {'issue_updates': issue_updates + support_ticket_update}
-			r = requests.request("PUT", url, headers=headers, data = json.dumps(data))
-			response = r.json()
+			#data = {"issue_updates": issue_updates + support_ticket_update}
+			data = {"issue_updates":[{"description":"Test Description XYZ"}]}
+			#data = {"priority":"Low"}
+			frappe.msgprint(str(data))
+			try:
+				r_put = requests.request("PUT", url, headers=headers, data = json.dumps(data))
+				response_put = r_put.json()
+				print(response_put)
+			except Exception as e:
+				frappe.msgprint(str(e))
 
 	def create_issue(self, headers, project):
 		support_ticket_reference = get_url() + get_absolute_url(self.doctype,self.name)

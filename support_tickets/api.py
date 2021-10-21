@@ -42,3 +42,11 @@ def update_client_key_secret(api_key,api_secret):
 
 
 		
+@frappe.whitelist(allow_guest=True)
+def get_credential():
+	support_settings = frappe.get_single("Support Settings")
+	support_token = support_settings.support_token
+	server_api_key = support_settings.server_api_key
+	server_api_secret = support_settings.get_password('server_api_secret')
+
+	return support_token, server_api_key, server_api_secret

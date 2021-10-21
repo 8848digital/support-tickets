@@ -13,6 +13,7 @@
   "section_break_5",
   "description",
   "section_break_7",
+  "update_issue",
   "updates"
  ],
  "fields": [
@@ -56,11 +57,17 @@
    "fieldtype": "Data",
    "label": "Partner Support id",
    "read_only": 1
+  },
+  {
+   "fieldname": "update_issue",
+   "fieldtype": "Button",
+   "label": "Update Issue",
+   "options": "update_issue"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2021-10-14 12:57:10.007478",
+ "modified": "2021-10-16 11:16:41.687696",
  "modified_by": "Administrator",
  "module": "Support Tickets",
  "name": "Support Ticket",
