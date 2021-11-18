@@ -11,7 +11,18 @@ from frappe.utils.data import get_absolute_url
 
 class SupportTicket(Document):
 	def validate(self):
-		pass
+		if self.is_new():
+			project = validate_and_get_project()
+
+			support_settings = frappe.get_single("Support Settings")
+			server_api_key = support_settings.server_api_key
+			server_api_secret = support_settings.get_password('server_api_secret')
+			headers = {'Authorization':'token ' + server_api_key + ':' +  server_api_secret,'Content-Type': 'application/json',
+		'Cookie': 'full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=' }
+
+			self.create_issue(headers,project)
+
+		#self.update_issue()
 
 	@frappe.whitelist()
 	def update_issue(self):
@@ -31,7 +42,7 @@ class SupportTicket(Document):
 		
 			r = requests.request("GET", url, headers=headers)
 			response = r.json()
-			issue_updates = response['data']['issue_updates']
+			issue_updates = response['message']['issue_updates']
 			support_ticket_update =[]
 			if not issue_updates:
 				for d in self.updates:
@@ -65,4 +76,4 @@ class SupportTicket(Document):
 			frappe.throw(str(e))
 		response = r.json()
 
-		self.partner_support_id = response['data']['name']
+		self.partner_support_id = response['message']['name']

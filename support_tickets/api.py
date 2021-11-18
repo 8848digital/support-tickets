@@ -19,14 +19,14 @@ def validate_and_get_project():
 	r = requests.request("GET", url, headers=headers)
 	response = r.json()
 	
-	client_support_token_on_server =  response['data'][0]['support_token']
-	support_end_date = response['data'][0]['support_end_date']
+	client_support_token_on_server =  response['message'][0]['support_token']
+	support_end_date = response['message'][0]['support_end_date']
 	client_support_token = frappe.db.get_single_value('Support Settings','support_token')
 
 	if client_support_token != client_support_token_on_server or  nowdate() > support_end_date:
 		frappe.throw("Your support is expired. Please update support token to continue...")
 
-	return response['data'][0]['name']
+	return response['message'][0]['name']
 
 def update_client_key_secret(api_key,api_secret):
 
