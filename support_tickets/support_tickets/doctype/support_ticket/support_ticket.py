@@ -31,14 +31,15 @@ class SupportTicket(Document):
 		support_settings = frappe.get_single("Support Settings")
 		server_api_key = support_settings.server_api_key
 		server_api_secret = support_settings.get_password('server_api_secret')
-		headers = {'Authorization':'token ' + server_api_key + ':' +  server_api_secret,'Content-Type': 'application/json',
-  'Cookie': 'full_name=Guest; sid=Guest; system_user=no; user_id=Guest; user_image=' }
+		server_url = support_settings.server_url
+
+		headers = {'Authorization':'token ' + server_api_key + ':' +  server_api_secret }
 	
 		if self.is_new():
 			self.create_issue(headers,project)
 		
 		if self.partner_support_id and self.updates:
-			url = 'http://8848digital-staging.8848digitalerp.com/api/resource/Issue/'+self.partner_support_id
+			url = server_url + '/api/resource/Issue/'+self.partner_support_id
 		
 			r = requests.request("GET", url, headers=headers)
 			response = r.json()
@@ -54,26 +55,24 @@ class SupportTicket(Document):
 					if d.name not in support_ticket_reference_list and not d.issue_update_id:
 						support_ticket_update.append({"description": d.description,"support_ticket_update_id": d.name})
 
-			#data = {"issue_updates": issue_updates + support_ticket_update}
-			data = {"issue_updates":[{"description":"Test Description XYZ"}]}
-			#data = {"priority":"Low"}
-			frappe.msgprint(str(data))
+			data = {"issue_updates": issue_updates + support_ticket_update}
 			try:
 				r_put = requests.request("PUT", url, headers=headers, data = json.dumps(data))
 				response_put = r_put.json()
-				print(response_put)
+				if r_put.status_code == 200:
+					frappe.msgprint(f"Issue {self.partner_support_id} updated.")
 			except Exception as e:
-				frappe.msgprint(str(e))
+				frappe.throw(str(e))
 
 	def create_issue(self, headers, project):
 		support_ticket_reference = get_url() + get_absolute_url(self.doctype,self.name)
+		server_url = frappe.db.get_single_value('Support Settings','server_url')
 
-		url = "http://8848digital-staging.8848digitalerp.com/api/resource/Issue"
+		url = server_url + "/api/resource/Issue"
 		data = {'subject':self.subject,'description':self.description,'project':project,'support_ticket_reference':support_ticket_reference}
 		try:
 			r = requests.request("POST", url, headers=headers, data=json.dumps(data))
 		except Exception as e:
 			frappe.throw(str(e))
 		response = r.json()
-
 		self.partner_support_id = response['message']['name']

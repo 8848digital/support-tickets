@@ -8,11 +8,12 @@ def validate_and_get_project():
 	support_token = support_settings.support_token
 	server_api_key = support_settings.server_api_key
 	server_api_secret = support_settings.get_password('server_api_secret')
+	server_url = support_settings.server_url
 
 	if not server_api_key or not server_api_secret:
 		frappe.throw("Please update API key and Secret from support settings")
 	
-	url = 'http://8848digital-staging.8848digitalerp.com/api/resource/Project?fields=["name","support_token","support_start_date","support_end_date"]&filters={"support_token": "' +support_token+ '"}'
+	url = server_url + '/api/resource/Project?fields=["name","support_token","support_start_date","support_end_date"]&filters={"support_token": "' +support_token+ '"}'
 	headers = {'Authorization':'token ' + server_api_key + ':' +  server_api_secret }
 
 
@@ -31,8 +32,15 @@ def validate_and_get_project():
 def update_client_key_secret(api_key,api_secret):
 
 	project_name =  validate_and_get_project()
-	
-	put_url = 'http://8848digital-staging.8848digitalerp.com/api/resource/Project/'+project_name
+
+	support_settings = frappe.get_single("Support Settings")
+	server_api_key = support_settings.server_api_key
+	server_api_secret = support_settings.get_password('server_api_secret')
+	server_url = support_settings.server_url
+
+	headers = {'Authorization':'token ' + server_api_key + ':' +  server_api_secret }
+
+	put_url = server_url + '/api/resource/Project/'+project_name
 	
 	data = {'client_api_key': api_key, 'client_api_secret': api_secret}
 	try:
